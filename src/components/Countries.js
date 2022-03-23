@@ -1,23 +1,50 @@
-import { axios } from 'axios';
-import React, { useEffect, useState } from 'react';
+import axios, * as others from 'axios';
+import { useEffect, useState } from "react";
+import Card from './Card';
 
 const Countries = () => {
-
-    const [data, setData] = useState([])
-
+    const[data, setData] = useState([]);
+    const [rangeValue, setRangeValue]= useState(36);
+    const [selectRadio , setSelectRadio] = useState("")
+    const radios = ["Africa","America","Europe","Asia","Oceanie"];
+    // axios pour faire de de fetch et recuperer des API
     useEffect(() => {
-        axios.get("https://restcountries.com/v3.1/all").then((res) => setData(res.data));
-    }, []);
+        axios.get("https://restcountries.com/v3.1/all")
+        .then((res)=> setData(res.data))
+
+    }, [])
+        
 
     return (
         <div className='countries'>
-            <h3>COUNTRIES</h3>
+       
+      <ul className="radio-container">
+          <input type="range" min="1" max="250"defaultValue={rangeValue} onChange={(e) => setRangeValue(e.target.value)}/>
+            {radios.map((continent, index)=>(
+                <li>
+                    <input type="radio" id={continent} name="contient-radio" checked={continent === selectRadio}  onChange={(e) => setSelectRadio(e.target.id)}/>
+                    <label htmlFor={continent}>{continent}</label>
+                </li>
+            ))}
+           
+      </ul>
+      {selectRadio && (
+          <button
+            onClick={()=>setSelectRadio("")}
+          >
+              annuler la recherche
+          </button>
+      )}
             <ul>
-                {
-                    data.map((country, index) => (
-                        <li key={index}>{country.translations.fra.common}</li>))
-                }
+                {data
+                .filter((country)=> country.continents[0].includes(selectRadio))
+                .sort((a,b) => b.population - a.population)
+                .slice(0, rangeValue)
+                .map((country, index) => (
+                    <Card key={index} country ={country}/>
+                ))}
             </ul>
+           
         </div>
     );
 };
